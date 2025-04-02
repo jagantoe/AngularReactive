@@ -13,7 +13,7 @@ import { AbilityDetail } from '../../../../../types/ability-detail';
           {{ability.name}}
         </span>
         <div
-          class="absolute z-10 invisible group-hover:visible bg-black text-white p-4 rounded-lg shadow-lg w-64 mt-2 text-sm animate-expand">
+          class="absolute z-10 invisible group-hover:visible bg-black text-white p-4 rounded-lg shadow-lg w-64 mt-2 text-sm">
           {{ability.effect_entries[0].effect || 'No description available.'}}
         </div>
       </div>

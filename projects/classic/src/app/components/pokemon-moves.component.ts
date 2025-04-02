@@ -12,7 +12,7 @@ import { Pokemon } from '../../../../../types/pokemon';
             <span class="transform transition-transform" [class.rotate-180]="isExpanded">↓</span>
         </button>
 
-        <div *ngIf="isExpanded" class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2 animate-expand">
+        <div *ngIf="isExpanded" class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
             <div *ngFor="let move of pokemon.moves" class="p-2 bg-gray-50 rounded capitalize text-sm">
                 {{move.move.name}}
             </div>

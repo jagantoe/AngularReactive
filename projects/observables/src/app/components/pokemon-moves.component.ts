@@ -1,27 +1,25 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Pokemon } from '../../../../../types/pokemon';
 
 @Component({
   selector: 'app-pokemon-moves',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   template: `
-    <div class="mt-6">
-        <button (click)="isExpanded = !isExpanded"
-            class="w-full flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-            <h3 class="font-bold text-lg">Moves ({{pokemon.moves.length}})</h3>
-            <span class="transform transition-transform" [class.rotate-180]="isExpanded">↓</span>
-        </button>
-
-        <div *ngIf="isExpanded" class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2 animate-expand">
-            <div *ngFor="let move of pokemon.moves" class="p-2 bg-gray-50 rounded capitalize text-sm">
-                {{move.move.name}}
-            </div>
-        </div>
-    </div>
+    <details class="w-full mt-6 p-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+      <summary class="font-semibold select-none cursor-pointer">Moves ({{pokemon().moves.length}})</summary>
+      <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
+        @for (move of pokemon().moves; track $index) {
+          <div class="p-2 bg-gray-50 rounded capitalize text-sm">
+            {{move.move.name}}
+          </div>
+        }
+      </div>
+    </details>
   `,
   styles: ``
 })
 export class PokemonMovesComponent {
-  @Input() pokemon!: Pokemon;
+  readonly pokemon = input.required<Pokemon>();
   isExpanded = false;
 }

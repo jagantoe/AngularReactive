@@ -1,89 +1,66 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AbilityDetail } from '../../../../../../types/ability-detail';
-import { Pokemon } from '../../../../../../types/pokemon';
+import { AsyncPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { firstValueFrom, shareReplay, switchMap, tap } from 'rxjs';
+import { MAXPOKEMONID } from '../../../../../../types/pokemon';
+import { PokemonCardComponent } from '../../components/pokemon-card.component';
+import { PokemonSearchComponent } from '../../components/pokemon-search.component';
+import { PokemonTeamBeltComponent } from '../../components/pokemon-team-belt.component';
 import { PokemonService } from '../../services/pokemon.service';
 
 @Component({
   selector: 'app-pokemon-viewer',
-  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PokemonSearchComponent, PokemonTeamBeltComponent, PokemonCardComponent, AsyncPipe],
   template: `
     <div class="min-h-screen bg-gray-100 p-4">
-        <app-team-belt></app-team-belt>
+      <app-pokemon-team-belt/>
 
-        <div class="max-w-md mx-auto mb-6">
-            <app-pokemon-search></app-pokemon-search>
+      @if(pokemon$ | async; as pokemon) {
+        <div class="flex gap-2 justify-center mb-6">
+          <button (click)="navigateToPokemon(-1)" class="nav-button font-mono"
+              [disabled]="pokemon.id === 1" [class.opacity-50]="pokemon.id === 1">
+            ←
+          </button>
+
+          <app-pokemon-search/>
+
+          <button (click)="navigateToPokemon(1)" class="nav-button font-mono"
+              [disabled]="pokemon.id === maxPokemonId" [class.opacity-50]="pokemon.id === maxPokemonId">
+            →
+          </button>
         </div>
 
-        <div *ngIf="loading" class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p class="mt-4 text-gray-600">Loading Pokemon...</p>
+        <app-pokemon-card [pokemon]="pokemon"/>
+      } @else {
+        <div class="text-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p class="mt-4 text-gray-600">Loading Pokemon...</p>
         </div>
-
-        <div *ngIf="error" class="text-center py-12">
-            <p class="text-red-500">Error loading Pokemon. Please try again.</p>
-        </div>
-
-        <div *ngIf="!loading && !error" class="relative max-w-4xl mx-auto">
-            <button (click)="navigateToPokemon(-1)" class="nav-button absolute left-4 top-1/2 transform -translate-y-1/2"
-                [disabled]="pokemon?.id === 1" [class.opacity-50]="pokemon?.id === 1">
-                ←
-            </button>
-
-            <app-pokemon-card *ngIf="pokemon" [pokemon]="pokemon" [abilityDetails]="abilityDetails"></app-pokemon-card>
-
-            <button (click)="navigateToPokemon(1)" class="nav-button absolute right-4 top-1/2 transform -translate-y-1/2"
-                [disabled]="pokemon?.id === 898" [class.opacity-50]="pokemon?.id === 898">
-                →
-            </button>
-        </div>
+      }
     </div>
   `,
   styles: ``
 })
 export class PokemonViewerComponent {
-  pokemon: Pokemon | null = null;
-  abilityDetails: AbilityDetail[] = [];
-  loading = true;
-  error = false;
+  private readonly pokemonService = inject(PokemonService);
+  private readonly router = inject(Router);
+  private titleSerivce = inject(Title);
+  readonly maxPokemonId = MAXPOKEMONID;
 
-  constructor(
-    private pokemonService: PokemonService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) { }
+  id = input.required<number>();
+  pokemon$ = toObservable(this.id).pipe(
+    switchMap(id => this.pokemonService.getPokemon(id)),
+    tap(pokemon => this.titleSerivce.setTitle(pokemon.name)),
+    shareReplay(1)
+  );
 
-  ngOnInit() {
-    this.route.params.subscribe(params => {
-      const id = params['id'];
-      if (!id) {
-        this.router.navigate(['/pokemon', this.pokemonService.getRandomPokemonId()]);
-        return;
-      }
-      this.loadPokemon(parseInt(id, 10));
-    });
-  }
-
-  loadPokemon(id: number) {
-    this.loading = true;
-    this.error = false;
-    this.pokemonService.getPokemonWithAbilities(id).subscribe({
-      next: ([pokemon, abilities]) => {
-        this.pokemon = pokemon;
-        this.abilityDetails = abilities;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = true;
-        this.loading = false;
-      }
-    });
-  }
-
-  navigateToPokemon(offset: number) {
-    if (!this.pokemon) return;
-    const newId = this.pokemon.id + offset;
-    if (newId > 0 && newId <= 898) {
+  async navigateToPokemon(offset: number) {
+    const value = await firstValueFrom(this.pokemon$);
+    const newId = value.id + offset;
+    if (newId > 0 && newId <= MAXPOKEMONID) {
       this.router.navigate(['/pokemon', newId]);
     }
   }
