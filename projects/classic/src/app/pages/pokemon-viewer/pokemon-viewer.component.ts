@@ -1,89 +1,67 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbilityDetail } from '../../../../../../types/ability-detail';
-import { Pokemon } from '../../../../../../types/pokemon';
+import { MAXPOKEMONID, Pokemon } from '../../../../../../types/pokemon';
+import { CHANGE_DETECTION } from '../../app.module';
 import { PokemonService } from '../../services/pokemon.service';
 
 @Component({
   selector: 'app-pokemon-viewer',
-  imports: [],
+  standalone: false,
+  changeDetection: CHANGE_DETECTION,
   template: `
     <div class="min-h-screen bg-gray-100 p-4">
-        <app-team-belt></app-team-belt>
+      <app-pokemon-team-belt></app-pokemon-team-belt>
 
-        <div class="max-w-md mx-auto mb-6">
-            <app-pokemon-search></app-pokemon-search>
+      <ng-container *ngIf="pokemon; else loading">
+        <div class="flex gap-2 justify-center mb-6">
+          <button (click)="navigateToPokemon(-1)" class="nav-button font-mono"
+              [disabled]="pokemon.id === 1" [class.opacity-50]="pokemon.id === 1">
+            ←
+          </button>
+
+          <app-pokemon-search></app-pokemon-search>
+
+          <button (click)="navigateToPokemon(1)" class="nav-button font-mono"
+              [disabled]="pokemon.id === maxPokemonId" [class.opacity-50]="pokemon.id === maxPokemonId">
+            →
+          </button>
         </div>
 
-        <div *ngIf="loading" class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p class="mt-4 text-gray-600">Loading Pokemon...</p>
+        <app-pokemon-card [pokemon]="pokemon"/>
+      </ng-container>
+      <ng-template #loading>
+        <div class="text-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p class="mt-4 text-gray-600">Loading Pokemon...</p>
         </div>
-
-        <div *ngIf="error" class="text-center py-12">
-            <p class="text-red-500">Error loading Pokemon. Please try again.</p>
-        </div>
-
-        <div *ngIf="!loading && !error" class="relative max-w-4xl mx-auto">
-            <button (click)="navigateToPokemon(-1)" class="nav-button absolute left-4 top-1/2 transform -translate-y-1/2"
-                [disabled]="pokemon?.id === 1" [class.opacity-50]="pokemon?.id === 1">
-                ←
-            </button>
-
-            <app-pokemon-card *ngIf="pokemon" [pokemon]="pokemon" [abilityDetails]="abilityDetails"></app-pokemon-card>
-
-            <button (click)="navigateToPokemon(1)" class="nav-button absolute right-4 top-1/2 transform -translate-y-1/2"
-                [disabled]="pokemon?.id === 898" [class.opacity-50]="pokemon?.id === 898">
-                →
-            </button>
-        </div>
+      </ng-template>
     </div>
   `,
   styles: ``
 })
-export class PokemonViewerComponent {
-  pokemon: Pokemon | null = null;
-  abilityDetails: AbilityDetail[] = [];
-  loading = true;
-  error = false;
+export class PokemonViewerComponent implements OnInit {
+  readonly maxPokemonId = MAXPOKEMONID;
+  pokemon: Pokemon | undefined;
 
-  constructor(
-    private pokemonService: PokemonService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) { }
+  constructor(private pokemonService: PokemonService,
+    private route: ActivatedRoute, private router: Router,
+    private titleSerivce: Title) { }
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
-      const id = params['id'];
-      if (!id) {
-        this.router.navigate(['/pokemon', this.pokemonService.getRandomPokemonId()]);
-        return;
-      }
-      this.loadPokemon(parseInt(id, 10));
-    });
-  }
-
-  loadPokemon(id: number) {
-    this.loading = true;
-    this.error = false;
-    this.pokemonService.getPokemonWithAbilities(id).subscribe({
-      next: ([pokemon, abilities]) => {
+    this.route.params.subscribe(async params => {
+      const id = +params['id'];
+      if (id) {
+        const pokemon = await this.pokemonService.getPokemon(id);
+        this.titleSerivce.setTitle(pokemon.name);
         this.pokemon = pokemon;
-        this.abilityDetails = abilities;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = true;
-        this.loading = false;
       }
     });
   }
 
-  navigateToPokemon(offset: number) {
-    if (!this.pokemon) return;
-    const newId = this.pokemon.id + offset;
-    if (newId > 0 && newId <= 898) {
+  async navigateToPokemon(offset: number) {
+    const newId = this.pokemon!.id + offset;
+    if (newId > 0 && newId <= MAXPOKEMONID) {
       this.router.navigate(['/pokemon', newId]);
     }
   }

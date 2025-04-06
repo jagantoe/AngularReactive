@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 import { Pokemon } from '../../../../../types/pokemon';
 
 const TEAM_STORAGE_KEY = 'pokemon_team';
@@ -9,8 +8,8 @@ const TEAM_STORAGE_KEY = 'pokemon_team';
 })
 export class TeamService {
   private readonly MAX_TEAM_SIZE = 6;
-  private teamSubject = new BehaviorSubject<Pokemon[]>(this.loadTeamFromStorage());
-  team$ = this.teamSubject.asObservable();
+
+  team = this.loadTeamFromStorage();
 
   private loadTeamFromStorage(): Pokemon[] {
     try {
@@ -31,23 +30,17 @@ export class TeamService {
   }
 
   addPokemon(pokemon: Pokemon): boolean {
-    const currentTeam = this.teamSubject.value;
-    if (currentTeam.length >= this.MAX_TEAM_SIZE) {
+    if (this.team.length >= this.MAX_TEAM_SIZE || this.team.some(p => p.id === pokemon.id)) {
       return false;
     }
-    if (currentTeam.some(p => p.id === pokemon.id)) {
-      return false;
-    }
-    const newTeam = [...currentTeam, pokemon];
-    this.teamSubject.next(newTeam);
-    this.saveTeamToStorage(newTeam);
+
+    this.team.push(pokemon);
+    this.saveTeamToStorage(this.team);
     return true;
   }
 
   removePokemon(pokemonId: number) {
-    const currentTeam = this.teamSubject.value;
-    const newTeam = currentTeam.filter(p => p.id !== pokemonId);
-    this.teamSubject.next(newTeam);
-    this.saveTeamToStorage(newTeam);
+    this.team = this.team.filter(p => p.id !== pokemonId);
+    this.saveTeamToStorage(this.team);
   }
 }

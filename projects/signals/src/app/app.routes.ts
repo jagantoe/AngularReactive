@@ -10,7 +10,7 @@ export const routes: Routes = [
         canActivate: [(route: ActivatedRouteSnapshot, _: RouterStateSnapshot) => {
             const router = inject(Router);
             const id = +route.paramMap.get('id')!;
-            if (id < 0) return router.parseUrl('/pokemon/1');
+            if (id <= 0) return router.parseUrl('/pokemon/1');
             if (id > MAXPOKEMONID) return router.parseUrl(`/pokemon/${MAXPOKEMONID}`);
             return true;
         }]

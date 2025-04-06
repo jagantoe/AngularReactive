@@ -1,51 +1,47 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { CHANGE_DETECTION } from '../app.module';
 import { PokemonService } from '../services/pokemon.service';
 
 @Component({
   selector: 'app-pokemon-search',
-  imports: [],
+  standalone: false,
+  changeDetection: CHANGE_DETECTION,
   template: `
     <div class="relative">
-        <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" (blur)="onBlur()" placeholder="Search Pokemon..."
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-
-        <div *ngIf="showResults && searchResults.length > 0"
-            class="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
-            <button *ngFor="let result of searchResults" (click)="selectPokemon(result.id)"
-                class="w-full px-4 py-2 text-left hover:bg-gray-100 capitalize">
-                {{result.name}}
-            </button>
-        </div>
+      <input type="text" [(ngModel)]="searchQuery" (input)="search()" placeholder="Search Pokemon..."
+          class="peer w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+      <div class="peer-focus:block hidden absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+        <button *ngFor="let result of results" (mousedown)="selectPokemon(result.id)"
+            class="w-full px-4 py-2 text-left hover:bg-gray-100 capitalize">
+          {{result.name}}
+        </button>
+      </div>
     </div>
   `,
   styles: ``
 })
 export class PokemonSearchComponent {
-  searchQuery = '';
-  searchResults: Array<{ name: string, id: number }> = [];
-  showResults = false;
+  searchQuery = "";
+  results: { name: string; id: number; }[] = [];
 
-  constructor(
-    private pokemonService: PokemonService,
-    private router: Router
-  ) { }
+  constructor(private pokemonService: PokemonService, private router: Router) { }
 
-  onSearch() {
-    this.searchResults = this.pokemonService.searchPokemon(this.searchQuery);
-    this.showResults = true;
+  search(): void {
+    if (!this.pokemonService.pokemonList || !this.searchQuery) {
+      this.results = [];
+      return;
+    }
+
+    const normalizedQuery = this.searchQuery.toLowerCase();
+    this.results = this.pokemonService.pokemonList
+      .filter(pokemon => pokemon.name.includes(normalizedQuery))
+      .slice(0, 10);
   }
 
   selectPokemon(id: number) {
-    this.searchQuery = '';
-    this.showResults = false;
+    this.searchQuery = "";
+    this.search();
     this.router.navigate(['/pokemon', id]);
-  }
-
-  onBlur() {
-    // Delay hiding results to allow click events to fire
-    setTimeout(() => {
-      this.showResults = false;
-    }, 200);
   }
 }
