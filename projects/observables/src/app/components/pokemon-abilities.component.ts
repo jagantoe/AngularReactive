@@ -26,5 +26,6 @@ import { AbilityDetail } from '../../../../../types/ability-detail';
   styles: ``
 })
 export class PokemonAbilitiesComponent {
+  // Nothing much to note here, the abilities are passed to the input signal and we iterate over them using the @for.
   readonly abilities = input.required<AbilityDetail[]>();
 }

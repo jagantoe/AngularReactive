@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { MAXPOKEMONID } from '../../../../../types/pokemon';
 
+// In older projects we would use class Guards that implemented interfaces and configured those in the Routes.
 @Injectable({
     providedIn: 'root'
 })

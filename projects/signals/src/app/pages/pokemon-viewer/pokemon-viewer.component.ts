@@ -26,7 +26,7 @@ import { PokemonService } from '../../services/pokemon.service';
           <p class="text-red-500">Error loading Pokemon. Please try again.</p>
         </div>
       }
-      @if (pokemonResource.value(); as pokemon) {\
+      @if (pokemonResource.value(); as pokemon) {
         <div class="flex gap-2 justify-center mb-6">
           <button (click)="navigateToPokemon(-1)" class="nav-button font-mono"
               [disabled]="pokemon.id === 1" [class.opacity-50]="pokemon.id === 1">
@@ -48,15 +48,22 @@ import { PokemonService } from '../../services/pokemon.service';
   styles: ``
 })
 export class PokemonViewerComponent {
+  // As an alternative to constructor DI, we can use the inject function to get our dependencies inline.
+  // The inject function can only be used at injection contexts: https://angular.dev/guide/di/dependency-injection-context
+  // For that reason we usually want to make these dependencies readonly.
+  // It also makes our reactive code cleaner because we can define everything inline and can leave out the constructor all together.
   private readonly pokemonService = inject(PokemonService);
   private readonly router = inject(Router);
   private titleSerivce = inject(Title);
   readonly maxPokemonId = MAXPOKEMONID;
 
+  // The id input signal is always updated when the route param changes.
   id = input.required<number>();
+  // Here we can trigger an api call each time the id signal changes.
   pokemonResource = httpResource<Pokemon>(() => this.pokemonService.getPokemon(this.id()));
 
   constructor() {
+    // Here we want to be notified when a value becomes available so that we can set the title of the page.
     effect(() => {
       if (this.pokemonResource.hasValue()) {
         this.titleSerivce.setTitle(this.pokemonResource.value().name);
@@ -65,6 +72,7 @@ export class PokemonViewerComponent {
   }
 
   navigateToPokemon(offset: number) {
+    // Because the buttons are only visible when a value is present we can safely use the value method here.
     const value = this.pokemonResource.value();
     if (!value) return;
     const newId = value.id + offset;

@@ -13,6 +13,7 @@ import { TeamService } from '../services/team.service';
       <h2 class="text-xl font-bold mb-4">Your Team</h2>
       <div class="grid grid-cols-6 gap-2">
         <div *ngFor="let slot of slots" class="aspect-square border-2 border-dashed border-gray-300 rounded-lg p-2 relative">
+          <!-- Here we directly reference the team field from the teamService because if the reference changes we also need to update our template -->
           <ng-container *ngIf="teamService.team[slot] as pokemon">
             <img [src]="pokemon.sprites.front_default" [alt]="pokemon.name" class="w-full h-full object-contain">
             <span

@@ -8,8 +8,11 @@ import { TeamService } from '../services/team.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe],
   template: `
+    <!-- Using the @let syntax we can assign basic js structures and reuse those within the template -->
     @let slots = [0,1,2,3,4,5];
-    @if(team$ | async; as team) {
+    <!-- For observables this is useful because we only need to subscribe only once if we want to use the value within the template -->
+    @let team = team$ | async;
+    @if(team) {
       <div class="bg-white shadow-md p-4 mb-6">
       <h2 class="text-xl font-bold mb-4">Your Team</h2>
       <div class="grid grid-cols-6 gap-2">
@@ -36,6 +39,9 @@ import { TeamService } from '../services/team.service';
 })
 export class PokemonTeamBeltComponent {
   private readonly teamService = inject(TeamService);
+  // We simply pass the team$ observable from the service to the component instead of the exposing the service.
+  // This way if the source of the team$ changes we don't have to change any references within the component.
+  // It also allows us to extend the observable with additional operators if needed.
   readonly team$ = this.teamService.team$;
 
   removePokemon(pokemon: Pokemon) {

@@ -7,6 +7,10 @@ import { AbilityDetail } from '../../../../../types/ability-detail';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   template: `
+    <!--
+      Much like with the async pipe for observables we will get undefined here if no value is available yet.
+      So we need an @if to check when the value is available and then we can use it.
+    -->
     @if(ability(); as ability){
       <div class="relative group">
         <span class="px-3 py-1 bg-indigo-500 text-white rounded-full capitalize cursor-help">
@@ -22,9 +26,12 @@ import { AbilityDetail } from '../../../../../types/ability-detail';
   styles: ``
 })
 export class PokemonAbilityComponent {
+  // Here the url of the ability is passed as an input.
   abilityUrl = input.required<string>();
+  // Using the httpResource we trigger an api call when that url changes.
   abilityResource = httpResource<AbilityDetail>(() => this.abilityUrl());
 
+  // Because we expect the result in a different format we can use a computed signal that transforms the result once it becomes available.
   ability = computed(() => {
     const value = this.abilityResource.value();
     if (value) {
@@ -41,6 +48,7 @@ export class PokemonAbilityComponent {
 
       return processedAbility;
     }
+    // While there is no value we simply return undefined.
     else return value;
   });
 }

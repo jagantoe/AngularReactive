@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { Pokemon } from '../../../../../types/pokemon';
 import { CHANGE_DETECTION } from '../app.module';
 
 @Component({
@@ -10,7 +9,7 @@ import { CHANGE_DETECTION } from '../app.module';
     <div class="mt-6">
       <h3 class="font-bold text-lg mb-2">Stats</h3>
       <div class="space-y-2">
-        <div *ngFor="let stat of pokemon.stats" class="flex items-center">
+        <div *ngFor="let stat of stats" class="flex items-center">
           <span class="w-24 text-gray-600 capitalize">{{stat.stat.name}}</span>
           <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
             <div class="h-full bg-blue-500" [style.width.%]="(stat.base_stat / 255) * 100"></div>
@@ -23,5 +22,10 @@ import { CHANGE_DETECTION } from '../app.module';
   styles: ``
 })
 export class PokemonStatsComponent {
-  @Input() pokemon!: Pokemon;
+  @Input() stats!: {
+    base_stat: number;
+    stat: {
+      name: string;
+    };
+  }[];
 }

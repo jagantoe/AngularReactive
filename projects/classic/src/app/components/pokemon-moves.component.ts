@@ -20,5 +20,4 @@ import { CHANGE_DETECTION } from '../app.module';
 })
 export class PokemonMovesComponent {
   @Input() pokemon!: Pokemon;
-  isExpanded = false;
 }

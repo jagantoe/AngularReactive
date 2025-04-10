@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { AbilityDetail } from '../../../../../types/ability-detail';
 import { Pokemon, typeColorMap } from '../../../../../types/pokemon';
 import { CHANGE_DETECTION } from '../app.module';
+import { PokemonService } from '../services/pokemon.service';
 import { TeamService } from '../services/team.service';
 
 @Component({
@@ -20,6 +21,7 @@ import { TeamService } from '../services/team.service';
             class="mx-auto h-64 w-64 object-contain">
           <h2 class="text-3xl font-bold capitalize mt-4">{{pokemon.name}}</h2>
           <div class="flex justify-center gap-2 mt-2">
+            <!-- The *ngFor directive can be used on an element to create an instance for each item of the array -->
             <span *ngFor="let type of pokemon.types" class="px-3 py-1 rounded-full text-white text-sm" [ngClass]="typeColorMap.get(type.type.name)">
               {{type.type.name}}
             </span>
@@ -41,19 +43,32 @@ import { TeamService } from '../services/team.service';
       <ng-container *ngIf="abilityDetails">
         <app-pokemon-abilities [abilities]="abilityDetails"></app-pokemon-abilities>
       </ng-container>
-      <app-pokemon-stats [pokemon]="pokemon"></app-pokemon-stats>
+      <app-pokemon-stats [stats]="pokemon.stats"></app-pokemon-stats>
       <app-pokemon-moves [pokemon]="pokemon"></app-pokemon-moves>
     </div>
   `,
   styles: ``
 })
-export class PokemonCardComponent {
+export class PokemonCardComponent implements OnChanges {
   readonly typeColorMap = typeColorMap;
 
+  // We use the @Input decorator to make this property assignable from the parent component.
   @Input() pokemon!: Pokemon;
-  @Input() abilityDetails: AbilityDetail[] = [];
+  abilityDetails: AbilityDetail[] = [];
 
-  constructor(private teamService: TeamService) { }
+  constructor(private pokemonService: PokemonService, private teamService: TeamService) { }
+
+  // The only way to know if the input has changed is to use the ngOnChanges lifecycle hook.
+  // Here we then fetch the abilities of the pokemon and store them in the abilityDetails array.
+  // Because the promises resolve asynchronously without awaits we might get weird behavior when quickly switching between pokemon.
+  ngOnChanges() {
+    if (this.pokemon) {
+      this.abilityDetails = [];
+      this.pokemon.abilities.forEach(ability => this.pokemonService.getAbilityDetails(ability.ability.url).then(abilityDetail => {
+        this.abilityDetails.push(abilityDetail);
+      }));
+    }
+  }
 
   addToTeam() {
     const added = this.teamService.addPokemon(this.pokemon);

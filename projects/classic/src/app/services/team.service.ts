@@ -9,6 +9,8 @@ const TEAM_STORAGE_KEY = 'pokemon_team';
 export class TeamService {
   private readonly MAX_TEAM_SIZE = 6;
 
+  // The team is a publicly accessible property which makes it accessible in other parts of the code.
+  // The drawback is that it is also modifiable from outside this service.
   team = this.loadTeamFromStorage();
 
   private loadTeamFromStorage(): Pokemon[] {
@@ -35,12 +37,14 @@ export class TeamService {
     }
 
     this.team.push(pokemon);
+    // Each time we update the team array we have to remember to manually save it to local storage.
     this.saveTeamToStorage(this.team);
     return true;
   }
 
   removePokemon(pokemonId: number) {
     this.team = this.team.filter(p => p.id !== pokemonId);
+    // Here as well we need to manually save it to local storage.
     this.saveTeamToStorage(this.team);
   }
 }

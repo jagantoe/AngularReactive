@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -30,8 +30,12 @@ export class PokemonSearchComponent {
   private readonly pokemonService = inject(PokemonService);
   private readonly router = inject(Router);
 
-  searchQuery = model('');
+  // We use a signal so we can two-way bind the input value to the signal.
+  // This way we now can reactively react to input from the user.
+  searchQuery = signal('');
+  // To connect signals and observables we use the toObservable function from '@angular/core/rxjs-interop'.
   searchQuery$ = toObservable(this.searchQuery);
+  // Now we can combine the user input with the pokemon list observable from the service.
   searchResults$ = combineLatest([this.searchQuery$, this.pokemonService.pokemonList$]).pipe(
     map(([search, list]) => {
       if (!list || !search) return [];
@@ -44,6 +48,7 @@ export class PokemonSearchComponent {
   )
 
   selectPokemon(id: number) {
+    // We reset the search after we select something.
     this.searchQuery.set('');
     this.router.navigate(['/pokemon', id]);
   }

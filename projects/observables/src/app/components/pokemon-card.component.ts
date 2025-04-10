@@ -1,4 +1,4 @@
-import { AsyncPipe, NgClass } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { forkJoin, switchMap } from 'rxjs';
@@ -12,7 +12,7 @@ import { PokemonStatsComponent } from "./pokemon-stats.component";
 @Component({
   selector: 'app-pokemon-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PokemonAbilitiesComponent, PokemonStatsComponent, PokemonMovesComponent, NgClass, AsyncPipe],
+  imports: [PokemonAbilitiesComponent, PokemonStatsComponent, PokemonMovesComponent, AsyncPipe],
   template: `
     @let poke = pokemon();
     <div class="pokemon-card">
@@ -27,7 +27,11 @@ import { PokemonStatsComponent } from "./pokemon-stats.component";
           <h2 class="text-3xl font-bold capitalize mt-4">{{poke.name}}</h2>
           <div class="flex justify-center gap-2 mt-2">
             @for (type of poke.types; track $index) {
-              <span class="px-3 py-1 rounded-full text-white text-sm" [ngClass]="typeColorMap.get(type.type.name)">
+              <!--
+                In Angular 19.2 they introduced the ability to bind on directly on class attribute instead of having to use ngClass
+                https://blog.angular.dev/angular-19-2-is-now-available-673ec70aea12
+              -->
+              <span class="px-3 py-1 rounded-full text-white text-sm" [class]="typeColorMap.get(type.type.name)">
                 {{type.type.name}}
               </span>
             }
@@ -49,7 +53,7 @@ import { PokemonStatsComponent } from "./pokemon-stats.component";
       @if(abilities$ | async; as abilities) {
         <app-pokemon-abilities [abilities]="abilities"/>
       }
-      <app-pokemon-stats [pokemon]="poke"/>
+      <app-pokemon-stats [stats]="poke.stats"/>
       <app-pokemon-moves [pokemon]="poke"/>
     </div>
   `,
@@ -61,7 +65,11 @@ export class PokemonCardComponent {
   readonly typeColorMap = typeColorMap;
 
   readonly pokemon = input.required<Pokemon>();
+
   readonly abilities$ = toObservable(this.pokemon).pipe(
+    // Each pokemon has multiple abilities but the details need to be fetched separately.
+    // By mapping the abilities to Observables we get an array of Observables, we still need to subscribe to each of them to get the results.
+    // To make all the requests in parallel we can use forkJoin, this will return an array of the results similar to Promise.all.
     switchMap(pokemon => forkJoin(pokemon.abilities.map(a => this.pokemonService.getAbilityDetails(a.ability.url)))),
   );
 

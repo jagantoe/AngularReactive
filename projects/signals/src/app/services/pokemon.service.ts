@@ -9,6 +9,13 @@ import { PokemonListResponse } from '../../../../../types/pokemon-list-response'
 export class PokemonService {
   private readonly baseUrl = 'https://pokeapi.co/api/v2';
 
+  // Introduced in Angular 18, we can now use the resource & httpResource signals for making api calls.
+  // This gives us an alternative to the HttpClient which returns observables.
+  // The resource has isLoading/error/value signals that indicate the status of the request.
+  // Because of the synchronous nature of signals some sort of value always need to be available.
+  // We are notified by the isLoading signal when the actual value becomes available.
+  // In this example it's a static url meaning it will never retrigger the request.
+  // https://angular.dev/guide/signals/resource
   private readonly pokemonList = httpResource<PokemonListResponse>(() => `${this.baseUrl}/pokemon?limit=${MAXPOKEMONID}`);
 
   searchPokemon(query: string): Array<{ name: string, id: number }> {
@@ -25,6 +32,7 @@ export class PokemonService {
       .slice(0, 10);
   }
 
+  // Because we cannot create resource signals dynamically, we simply return the url for the api call.
   getPokemon(id: number): string {
     return `${this.baseUrl}/pokemon/${id}`;
   }

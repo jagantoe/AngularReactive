@@ -27,10 +27,17 @@ export class PokemonSearchComponent {
   private readonly pokemonService = inject(PokemonService);
   private readonly router = inject(Router);
 
+  // We use a signal so we can two-way bind the input value to the signal.
+  // This way we now can reactively react to input from the user.
   searchQuery = model('');
+  // The computed signal will be retrigged each time the searchQuery signal changes.
+  // Any computation it does has to resolve synchronously so we are limited in what we can do.
+  // Note: one thing to be careful of is that inside the searchPokemon method we check the value of the pokemonList signal.
+  // This will also mark the pokemonList as a dependency for this computed meaning that if it was ever updated then this searchResults also retriggers.
   searchResults = computed(() => this.pokemonService.searchPokemon(this.searchQuery()));
 
   selectPokemon(id: number) {
+    // We reset the search after we select something.
     this.searchQuery.set('');
     this.router.navigate(['/pokemon', id]);
   }

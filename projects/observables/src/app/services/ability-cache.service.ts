@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AbilityDetail } from '../../../../../types/ability-detail';
 
+// Basic caching service that allows us to store values in memory.
 @Injectable({
   providedIn: 'root'
 })

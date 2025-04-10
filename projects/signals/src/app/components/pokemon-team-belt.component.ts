@@ -7,7 +7,9 @@ import { TeamService } from '../services/team.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   template: `
+    <!-- Using the @let syntax we can assign basic js structures and reuse those within the template -->
     @let slots = [0,1,2,3,4,5];
+    <!-- Since reading the team signal value is synchronous we can be certain it will never be null or undefined -->
     @let team = myTeam();
     <div class="bg-white shadow-md p-4 mb-6">
       <h2 class="text-xl font-bold mb-4">Your Team</h2>
@@ -34,6 +36,8 @@ import { TeamService } from '../services/team.service';
 })
 export class PokemonTeamBeltComponent {
   private readonly teamService = inject(TeamService);
+  // We simply pass the team signal from the service to the component instead of the exposing the service.
+  // This way if the source of the team signal changes we don't have to change any references within the component.
   readonly myTeam = this.teamService.team;
 
   removePokemon(pokemon: Pokemon) {

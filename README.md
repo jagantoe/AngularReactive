@@ -1,59 +1,23 @@
-# AngularReactive
+# Angular Reactive
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.3.
+Angular is trending towards being a lot more reactive with the addition of Signals.
+This project is inteded to showcase the differences in:
+- old vs new Angular project setup
+- reactive vs imperative code
+- observables vs signals
 
-## Development server
+Before taking a look at the code it's recommended to have a rudimentary understanding of [Signals in Angular](https://angular.dev/guide/signals) and [Observables](https://rxjs.dev/guide/observable).
 
-To start a local development server, run:
 
-```bash
-ng serve
-```
+General things to mention:
+- All components are made with an inline template, this is solely to to keep this project compact. Separate template files are still recommended in real projects.
+- The classic project is set up using the older app.module.ts structure and the others use newer app.config.ts setup with standalone components.
+- Some comments describe conventions for writing code, this all comes down to preferences in the end. They are intended as general guidelines and not hard rules.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Each projects contains the same parts and offers the same functionality and use Tailwind for styling.
+You can start each project using 'npm start {projectName}'.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Useful resources:
+- [Angular blog](https://blog.angular.dev/)
+- [All RxJS operators](https://rxjs.dev/api)
+- [When to use firstValueFrom vs lastValueFrom](https://rxjs.dev/deprecations/to-promise)

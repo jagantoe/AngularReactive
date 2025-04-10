@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Pokemon } from '../../../../../types/pokemon';
 
 @Component({
   selector: 'app-pokemon-stats',
@@ -9,7 +8,7 @@ import { Pokemon } from '../../../../../types/pokemon';
     <div class="mt-6">
       <h3 class="font-bold text-lg mb-2">Stats</h3>
       <div class="space-y-2">
-        @for (stat of pokemon().stats; track $index) {
+        @for (stat of stats(); track $index) {
           <div class="flex items-center">
             <span class="w-24 text-gray-600 capitalize">{{stat.stat.name}}</span>
             <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
@@ -24,5 +23,11 @@ import { Pokemon } from '../../../../../types/pokemon';
   styles: ``
 })
 export class PokemonStatsComponent {
-  readonly pokemon = input.required<Pokemon>();
+  // Nothing much to note here, the abilities are passed to the input signal and we iterate over them using the @for.
+  readonly stats = input.required<{
+    base_stat: number;
+    stat: {
+      name: string;
+    };
+  }[]>();
 }
